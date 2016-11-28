@@ -1,29 +1,18 @@
 //
-//  ViewController.h
+//  NSString+MD5.m
 //  navigator
 //
-//  Created by Pascal CAMARA on 23/11/2016.
+//  Created by Pascal CAMARA on 25/11/2016.
 //  Copyright © 2016 Pascal CAMARA. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonDigest.h>
 
-@interface ViewController : UIViewController
+@implementation NSString(MD5)
 
-@end
-
-
-@interface NSString(MD5)
-
-- (NSString *)MD5;
-
-@end
-
-@implementation NSString (MD5)
-
-//http://iosdevelopertips.com/core-services/create-md5-hash-from-nsstring-nsdata-or-file.html
-- (NSString *)MD5 {
+- (NSString*)MD5
+{
     // Create pointer to the string as UTF8
     const char *ptr = [self UTF8String];
     
@@ -40,5 +29,4 @@
     
     return output;
 }
-
 @end
