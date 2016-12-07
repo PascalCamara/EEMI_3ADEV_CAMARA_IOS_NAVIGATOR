@@ -15,6 +15,7 @@
 @property (weak, nonatomic) IBOutlet UITextView *resultText;
 
 -(void)makeSession:(NSString * )url with:(UITextView * )itemTextView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageDataView;
 
 @property NSFileManager * m;
 @property NSString * pathUrlCache;
@@ -37,7 +38,7 @@
     NSLog(@"debug : %@" , url);
     self.resultText.text = @"test";
     
-     self.pathUrlCache = [NSString stringWithFormat:@"tmp/%@", urlHash];
+     self.pathUrlCache = [NSString stringWithFormat:@"%@", urlHash];
     //NSLog(@"file debug : %@", pathUrlCache);
     //NSLog(@"File exist ? : %d\n", [m fileExistsAtPath:pathUrlCache] );
     // demande si file exist
@@ -111,18 +112,57 @@
                                   ^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                                       
         if (error == nil) {
-            NSString * stringData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            
                                           
-            //NSLog(@"%@", stringData);
-                                          
+            NSLog(@"iiii data %@", data);
+            NSLog(@"iiii response %@", response);
+            
+           
             dispatch_async(dispatch_get_main_queue(), ^{
-                self.resultText.text = stringData;
-                // write save in cache
-                if ([self.m fileExistsAtPath:self.pathUrlCache]) {
-                    [stringData writeToFile:self.pathUrlCache atomically:YES];
-                } else {
-                    [stringData writeToFile:self.pathUrlCache atomically:YES];
-                }
+                // On récupère le content type de la response
+                NSString * contentType = [(NSHTTPURLResponse*)response allHeaderFields][@"Content-Type"];
+                
+                // on regarde s'il s'agit d'une image
+                
+                NSLog(@"iiii content type : %@", contentType);
+                // http://stackoverflow.com/questions/2753956/how-do-i-check-if-a-string-contains-another-string-in-objective-c
+               if ([contentType rangeOfString:@"image/"].location != NSNotFound) {
+                   // data to image
+                   UIImage * image = [UIImage imageWithData:data];
+                   
+                   
+                   // afficher image
+                   self.imageDataView.hidden = NO;
+                   self.resultText.hidden = YES;
+                   self.imageDataView.image = image;
+                   
+                   /*UIImage *image = [[UIImage alloc] init];
+                   UIView *v = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+                   UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+                   [iv setImage:image];
+                   [v addSubview:iv];*/
+                   
+                   
+                   
+               } else {
+                   // afficher text
+                   NSString * stringData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                   
+                   self.imageDataView.hidden = YES;
+                   self.resultText.hidden = NO;
+
+                   self.resultText.text = stringData;
+                   
+                   // write save in cache
+                   if ([self.m fileExistsAtPath:self.pathUrlCache]) {
+                       [stringData writeToFile:self.pathUrlCache atomically:YES];
+                   } else {
+                       [stringData writeToFile:self.pathUrlCache atomically:YES];
+                   }
+
+               }
+                
+                
                 
             });
         } else {
